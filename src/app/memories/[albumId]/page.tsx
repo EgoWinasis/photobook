@@ -28,17 +28,15 @@ type Album = {
 };
 
 // ======================================================
-// LAZY MEDIA
+// LAZY IMAGE
 // ======================================================
 
-function LazyMedia({
+function LazyImage({
   media,
   alt,
-  isVideo = false,
 }: {
   media: Media;
   alt?: string;
-  isVideo?: boolean;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -61,7 +59,7 @@ function LazyMedia({
         }
       },
       {
-        rootMargin: "350px 0px",
+        rootMargin: "250px 0px",
         threshold: 0.01,
       }
     );
@@ -86,46 +84,63 @@ function LazyMedia({
       {failed ? (
         <div className="detail-media-error">
           <Flower2 size={30} />
-          <span>Media tidak dapat dimuat</span>
+          <span>Foto tidak dapat dimuat</span>
         </div>
       ) : visible ? (
-        isVideo ? (
-          <video
-            src={mediaUrl}
-            controls
-            playsInline
-            preload="none"
-            onLoadedData={() => setLoaded(true)}
-            onError={() => setFailed(true)}
-            className={
-              loaded
-                ? "detail-media-loaded"
-                : "detail-media-hidden"
-            }
-          />
-        ) : (
-          <img
-            src={mediaUrl}
-            alt={alt || media.name}
-            loading="lazy"
-            decoding="async"
-            onLoad={() => setLoaded(true)}
-            onError={() => setFailed(true)}
-            className={
-              loaded
-                ? "detail-media-loaded"
-                : "detail-media-hidden"
-            }
-          />
-        )
+        <img
+          src={mediaUrl}
+          alt={alt || media.name}
+          loading="lazy"
+          decoding="async"
+          onLoad={() => setLoaded(true)}
+          onError={() => setFailed(true)}
+          className={
+            loaded
+              ? "detail-media-loaded"
+              : "detail-media-hidden"
+          }
+        />
       ) : null}
-
-      {isVideo && visible && !failed && (
-        <span className="detail-video-indicator">
-          <Play size={18} fill="currentColor" />
-        </span>
-      )}
     </div>
+  );
+}
+
+// ======================================================
+// VIDEO CARD - TANPA MEMUAT VIDEO
+// ======================================================
+
+function VideoCard({ video }: { video: Media }) {
+  const videoUrl = `/api/image/${encodeURIComponent(video.id)}`;
+
+  return (
+    <a
+      href={videoUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="detail-video-card video-open-card"
+      title={`Putar ${video.name}`}
+    >
+      <div className="video-thumbnail-placeholder">
+        <Video size={43} />
+
+        <span className="video-play-button">
+          <Play size={22} fill="currentColor" />
+        </span>
+
+        <span className="video-placeholder-label">
+          VIDEO MEMORY
+        </span>
+      </div>
+
+      <div className="video-caption">
+        <Play size={15} />
+        <span>{video.name}</span>
+      </div>
+
+      <div className="video-open-label">
+        Klik untuk memutar di tab baru ↗
+      </div>
+    </a>
   );
 }
 
@@ -343,7 +358,7 @@ export default function AlbumDetailPage() {
                   target="_blank"
                   rel="noreferrer"
                 >
-                  <LazyMedia
+                  <LazyImage
                     media={photo}
                     alt={photo.name}
                   />
@@ -376,20 +391,10 @@ export default function AlbumDetailPage() {
 
             <div className="detail-video-grid">
               {videos.map((video) => (
-                <article
-                  className="detail-video-card"
+                <VideoCard
                   key={video.id}
-                >
-                  <LazyMedia
-                    media={video}
-                    isVideo
-                  />
-
-                  <div className="video-caption">
-                    <Play size={15} />
-                    <span>{video.name}</span>
-                  </div>
-                </article>
+                  video={video}
+                />
               ))}
             </div>
           </>
